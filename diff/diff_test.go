@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"cuelang.org/go/cue"
+	_ "cuelang.org/go/pkg"
 	"github.com/stretchr/testify/require"
 )
 
@@ -150,6 +151,34 @@ func TestDiff(t *testing.T) {
 				testChange{Type: DELETE, Path: `a`, From: `{
 	x: "hello"
 }`, To: `<nil>`},
+			},
+		},
+		{
+			name: "constraint",
+			x: `
+				import (
+					"time"
+					"list"
+				)
+
+				a: time.Duration
+				b: =~ "^a"
+				l: list.MaxItems(4)
+				`,
+			y: `
+				import (
+					"time"
+					"list"
+				)
+
+				a: time.Duration
+				b: =~"^a"
+				b: "ab"
+				l: list.MaxItems(5)
+				`,
+			cl: testChangelog{
+				testChange{Type: UPDATE, Path: `b`, From: `=~"^a"`, To: `"ab"`},
+				testChange{Type: UPDATE, Path: `l`, From: `list.MaxItems(4)`, To: `list.MaxItems(5)`},
 			},
 		},
 	}

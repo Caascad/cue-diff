@@ -16,6 +16,8 @@
 package diff
 
 import (
+	"fmt"
+
 	"cuelang.org/go/cue"
 )
 
@@ -47,6 +49,14 @@ func (d *differ) diffValue(x, y cue.Value) error {
 		fallthrough
 
 	default:
+		// To handle constraints like time.Duration that are not concrete.
+		if x.Kind() == cue.BottomKind && y.Kind() == cue.BottomKind {
+			if fmt.Sprint(x) != fmt.Sprint(y) {
+				d.cl.Add(UPDATE, x.Path(), &x, &y)
+			}
+			return nil
+		}
+
 		if !x.Equals(y) {
 			d.cl.Add(UPDATE, x.Path(), &x, &y)
 			return nil
