@@ -45,7 +45,13 @@ func (d *differ) diffValue(x, y cue.Value) error {
 
 		case cue.ListKind:
 			return d.diffList(x, y)
+
+		case cue.NullKind:
+			if y.Kind() == k {
+				return nil
+			}
 		}
+
 		fallthrough
 
 	default:

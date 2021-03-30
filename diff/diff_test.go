@@ -81,6 +81,7 @@ func TestDiff(t *testing.T) {
 				s: *4 | int
 				d: 1
 				e: [1, 2, 3]
+				f: null
 				#Def: 45
 			}`,
 			y: `{
@@ -91,6 +92,7 @@ func TestDiff(t *testing.T) {
 				e: {
 					a: 3
 				}
+				f: null
 				#Def: "foo"
 			} `,
 			cl: testChangelog{
