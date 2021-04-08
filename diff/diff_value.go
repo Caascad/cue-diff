@@ -46,16 +46,18 @@ func (d *differ) diffValue(x, y cue.Value) (bool, error) {
 		case cue.ListKind:
 			return d.diffList(x, y)
 
+		// FIXME: should be handled by Value.Equals?
 		case cue.NullKind:
 			if y.Kind() == k {
 				return false, nil
 			}
+
 		}
 
 		fallthrough
 
 	default:
-		// To handle constraints like time.Duration that are not concrete.
+		// FIXME: to handle constraints like time.Duration that are not concrete.
 		if x.Kind() == cue.BottomKind && y.Kind() == cue.BottomKind {
 			if fmt.Sprint(x) != fmt.Sprint(y) {
 				d.cl.Add(UPDATE, x.Path(), &x, &y)
