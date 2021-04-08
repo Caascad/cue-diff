@@ -27,10 +27,11 @@ func (d *differ) diffValue(x, y cue.Value) (bool, error) {
 		y, _ = y.Default()
 	}
 
-	// if x.IncompleteKind() != y.IncompleteKind() {
-	// 	d.cl.Add(UPDATE, x.Path(), &x, &y)
-	// 	return nil
-	// }
+	// Return early when values have different concrete types
+	if x.IncompleteKind() != y.IncompleteKind() {
+		d.cl.Add(UPDATE, x.Path(), &x, &y)
+		return true, nil
+	}
 
 	switch xc, yc := x.IsConcrete(), y.IsConcrete(); {
 
