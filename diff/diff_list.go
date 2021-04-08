@@ -19,7 +19,7 @@ import (
 	"cuelang.org/go/cue"
 )
 
-func (d *differ) diffList(x, y cue.Value) error {
+func (d *differ) diffList(x, y cue.Value) (bool, error) {
 	ix, _ := x.List()
 	iy, _ := y.List()
 
@@ -28,17 +28,17 @@ func (d *differ) diffList(x, y cue.Value) error {
 		hasY := iy.Next()
 
 		if !hasX && !hasY {
-			return nil
+			return false, nil
 		}
 
 		if !hasX && hasY || hasX && !hasY {
 			d.cl.Add(UPDATE, x.Path(), &x, &y)
-			return nil
+			return true, nil
 		}
 
-		if !ix.Value().Equals(iy.Value()) {
+		if c, _ := d.diffValue(ix.Value(), iy.Value()); c {
 			d.cl.Add(UPDATE, x.Path(), &x, &y)
-			return nil
+			return true, nil
 		}
 	}
 }

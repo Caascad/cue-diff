@@ -139,7 +139,9 @@ func TestDiff(t *testing.T) {
 				testChange{Type: UPDATE, Path: `s.a.f`, From: `3`, To: `4`},
 				testChange{Type: DELETE, Path: `s.d`, From: `4`, To: `<nil>`},
 				testChange{Type: CREATE, Path: `s.c`, From: `<nil>`, To: `4`},
-				testChange{Type: UPDATE, Path: `l`, From: `[[3, 4]]`, To: `[[3, 5, 6]]`},
+				testChange{Type: UPDATE, Path: "l[0][1]", From: "4", To: "5"},
+				testChange{Type: UPDATE, Path: "l[0]", From: "[3, 4]", To: "[3, 5, 6]"},
+				testChange{Type: UPDATE, Path: "l", From: "[[3, 4]]", To: "[[3, 5, 6]]"},
 			},
 		},
 		{
@@ -182,6 +184,16 @@ func TestDiff(t *testing.T) {
 				testChange{Type: UPDATE, Path: `b`, From: `=~"^a"`, To: `"ab"`},
 				testChange{Type: UPDATE, Path: `l`, From: `list.MaxItems(4)`, To: `list.MaxItems(5)`},
 			},
+		},
+		{
+			name: "null",
+			x: `
+				a: [1, null, {b: null}]
+				`,
+			y: `
+				a: [1, null, {b: null}]
+				`,
+			cl: testChangelog{},
 		},
 	}
 

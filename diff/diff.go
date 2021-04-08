@@ -76,7 +76,8 @@ func (p *Profile) Diff(x, y cue.Value) (Changelog, error) {
 		cfg: *p,
 		cl:  make([]Change, 0),
 	}
-	return d.cl, d.diffValue(x, y)
+	_, err := d.diffValue(x, y)
+	return d.cl, err
 }
 
 type differ struct {

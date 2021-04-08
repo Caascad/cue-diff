@@ -19,7 +19,8 @@ import (
 	"cuelang.org/go/cue"
 )
 
-func (d *differ) diffStruct(x, y cue.Value) error {
+func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
+	hasDiff := false
 	sx, _ := x.Struct()
 	sy, _ := y.Struct()
 
@@ -54,6 +55,7 @@ func (d *differ) diffStruct(x, y cue.Value) error {
 				continue
 			}
 			d.cl.Add(DELETE, xv.Path(), &xv, nil)
+			hasDiff = true
 		}
 		for ; yi < sy.Len(); yi++ {
 			yf = sy.Field(yi)
@@ -71,6 +73,7 @@ func (d *differ) diffStruct(x, y cue.Value) error {
 				continue
 			}
 			d.cl.Add(CREATE, yv.Path(), nil, &yv)
+			hasDiff = true
 		}
 
 		// Compare nodes
@@ -92,12 +95,13 @@ func (d *differ) diffStruct(x, y cue.Value) error {
 
 			xv := xf.Value
 			yv := yf.Value
-			if err := d.diffValue(xv, yv); err != nil {
-				return err
+			hasDiff, err := d.diffValue(xv, yv)
+			if err != nil {
+				return hasDiff, err
 			}
 
 		}
 	}
 
-	return nil
+	return hasDiff, nil
 }

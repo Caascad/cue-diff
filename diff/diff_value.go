@@ -21,7 +21,7 @@ import (
 	"cuelang.org/go/cue"
 )
 
-func (d *differ) diffValue(x, y cue.Value) error {
+func (d *differ) diffValue(x, y cue.Value) (bool, error) {
 	if d.cfg.UseDefaults {
 		x, _ = x.Default()
 		y, _ = y.Default()
@@ -36,7 +36,7 @@ func (d *differ) diffValue(x, y cue.Value) error {
 
 	case xc != yc:
 		d.cl.Add(UPDATE, x.Path(), &x, &y)
-		return nil
+		return true, nil
 
 	case xc && yc:
 		switch k := x.Kind(); k {
@@ -48,7 +48,7 @@ func (d *differ) diffValue(x, y cue.Value) error {
 
 		case cue.NullKind:
 			if y.Kind() == k {
-				return nil
+				return false, nil
 			}
 		}
 
@@ -59,15 +59,16 @@ func (d *differ) diffValue(x, y cue.Value) error {
 		if x.Kind() == cue.BottomKind && y.Kind() == cue.BottomKind {
 			if fmt.Sprint(x) != fmt.Sprint(y) {
 				d.cl.Add(UPDATE, x.Path(), &x, &y)
+				return true, nil
 			}
-			return nil
+			return false, nil
 		}
 
 		if !x.Equals(y) {
 			d.cl.Add(UPDATE, x.Path(), &x, &y)
-			return nil
+			return true, nil
 		}
 	}
 
-	return nil
+	return false, nil
 }
