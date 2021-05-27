@@ -47,12 +47,6 @@ func (d *differ) diffValue(x, y cue.Value) (bool, error) {
 		case cue.ListKind:
 			return d.diffList(x, y)
 
-		// FIXME: should be handled by Value.Equals?
-		case cue.NullKind:
-			if y.Kind() == k {
-				return false, nil
-			}
-
 		}
 
 		fallthrough

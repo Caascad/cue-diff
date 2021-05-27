@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"testing"
 
-	"cuelang.org/go/cue"
+	"cuelang.org/go/cue/cuecontext"
 	_ "cuelang.org/go/pkg"
 	"github.com/stretchr/testify/require"
 )
@@ -199,14 +199,14 @@ func TestDiff(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var r cue.Runtime
-			x, err := r.Compile("x", tc.x)
-			if err != nil {
-				t.Fatal(err)
+			ctx := cuecontext.New()
+			x := ctx.CompileString(tc.x)
+			if x.Err() != nil {
+				t.Fatal(x.Err())
 			}
-			y, err := r.Compile("y", tc.y)
-			if err != nil {
-				t.Fatal(err)
+			y := ctx.CompileString(tc.y)
+			if y.Err() != nil {
+				t.Fatal(y.Err())
 			}
 			p := tc.profile
 			if p == nil {
