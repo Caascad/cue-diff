@@ -50,8 +50,9 @@ type Change struct {
 }
 
 type Profile struct {
-	UseDefaults       bool
-	IgnoreDefinitions bool
+	UseDefaults        bool
+	IgnoreDefinitions  bool
+	IgnoreHiddenFields bool
 }
 
 var (

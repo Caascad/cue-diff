@@ -54,6 +54,9 @@ func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
 			if xf.IsDefinition && d.cfg.IgnoreDefinitions {
 				continue
 			}
+			if xf.IsHidden && d.cfg.IgnoreHiddenFields {
+				continue
+			}
 			d.cl.Add(DELETE, xv.Path(), &xv, nil)
 			hasDiff = true
 		}
@@ -70,6 +73,9 @@ func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
 			}
 			yMap[yf.Selector] = 0
 			if yf.IsDefinition && d.cfg.IgnoreDefinitions {
+				continue
+			}
+			if yf.IsHidden && d.cfg.IgnoreHiddenFields {
 				continue
 			}
 			d.cl.Add(CREATE, yv.Path(), nil, &yv)
@@ -90,6 +96,9 @@ func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
 			yf := sy.Field(int(yp - 1))
 
 			if xf.IsDefinition && d.cfg.IgnoreDefinitions {
+				continue
+			}
+			if xf.IsHidden && d.cfg.IgnoreHiddenFields {
 				continue
 			}
 

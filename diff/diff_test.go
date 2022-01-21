@@ -83,6 +83,7 @@ func TestDiff(t *testing.T) {
 				e: [1, 2, 3]
 				f: null
 				#Def: 45
+				_h: 2
 			}`,
 			y: `{
 				a: string
@@ -94,6 +95,7 @@ func TestDiff(t *testing.T) {
 				}
 				f: null
 				#Def: "foo"
+				_h: 3
 			} `,
 			cl: testChangelog{
 				testChange{Type: UPDATE, Path: `a`, From: `int`, To: `string`},
@@ -103,7 +105,23 @@ func TestDiff(t *testing.T) {
 				testChange{Type: UPDATE, Path: `e`, From: `[1, 2, 3]`, To: `{
 	a: 3
 }`},
+				testChange{Type: UPDATE, Path: `_h`, From: `2`, To: `3`},
 			},
+		},
+		{
+			name:    "ignored hidden fields",
+			profile: &Profile{IgnoreHiddenFields: true, UseDefaults: true},
+			x: `{
+				_x: "foo"
+				_y: "foo"
+				xy: *_x | _y
+			}`,
+			y: `{
+				_x: "foo"
+				_y: string
+				xy: *_x | _y
+			}`,
+			cl: testChangelog{},
 		},
 		{
 			name: "empty",
