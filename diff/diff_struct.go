@@ -57,7 +57,11 @@ func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
 			if xf.IsHidden && d.cfg.IgnoreHiddenFields {
 				continue
 			}
-			d.cl.Add(DELETE, xv.Path(), &xv, nil)
+			// Add subfields to the changelog as well
+			xv.Walk(func(v cue.Value) bool {
+				d.cl.Add(DELETE, v.Path(), &v, nil)
+				return true
+			}, nil)
 			hasDiff = true
 		}
 		for ; yi < sy.Len(); yi++ {
@@ -78,7 +82,11 @@ func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
 			if yf.IsHidden && d.cfg.IgnoreHiddenFields {
 				continue
 			}
-			d.cl.Add(CREATE, yv.Path(), nil, &yv)
+			// Add subfields to the changelog as well
+			yv.Walk(func(v cue.Value) bool {
+				d.cl.Add(CREATE, v.Path(), nil, &v)
+				return true
+			}, nil)
 			hasDiff = true
 		}
 
