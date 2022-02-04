@@ -17,6 +17,7 @@ package diff
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"cuelang.org/go/cue/cuecontext"
@@ -102,9 +103,7 @@ func TestDiff(t *testing.T) {
 				testChange{Type: DELETE, Path: `b`, From: `2`, To: `<nil>`},
 				testChange{Type: CREATE, Path: `c`, From: `<nil>`, To: `3`},
 				testChange{Type: UPDATE, Path: `d`, From: `1`, To: `int`},
-				testChange{Type: UPDATE, Path: `e`, From: `[1, 2, 3]`, To: `{
-	a: 3
-}`},
+				testChange{Type: UPDATE, Path: `e`, From: `[1, 2, 3]`, To: `{ a: 3 }`},
 				testChange{Type: UPDATE, Path: `_h`, From: `2`, To: `3`},
 			},
 		},
@@ -163,6 +162,32 @@ func TestDiff(t *testing.T) {
 			},
 		},
 		{
+			name: "new struct",
+			x:    `x: {a: 1}`,
+			y: `x: {
+				a: 1
+				b: {a: 1, b: 2}
+			}`,
+			cl: testChangelog{
+				testChange{Type: CREATE, Path: `x.b`, From: `<nil>`, To: "{ a: 1 b: 2 }"},
+				testChange{Type: CREATE, Path: `x.b.a`, From: `<nil>`, To: `1`},
+				testChange{Type: CREATE, Path: `x.b.b`, From: `<nil>`, To: `2`},
+			},
+		},
+		{
+			name: "del struct",
+			x: `x: {
+				a: 1
+				b: {a: 1, b: 2}
+			}`,
+			y: `x: {a: 1}`,
+			cl: testChangelog{
+				testChange{Type: DELETE, Path: `x.b`, From: "{ a: 1 b: 2 }", To: `<nil>`},
+				testChange{Type: DELETE, Path: `x.b.a`, From: `1`, To: `<nil>`},
+				testChange{Type: DELETE, Path: `x.b.b`, From: `2`, To: `<nil>`},
+			},
+		},
+		{
 			name: "bulk optional",
 			x: `
 				{[_]: x: "hello"}
@@ -170,9 +195,8 @@ func TestDiff(t *testing.T) {
 				`,
 			y: `[_]: x: "hello"`,
 			cl: testChangelog{
-				testChange{Type: DELETE, Path: `a`, From: `{
-	x: "hello"
-}`, To: `<nil>`},
+				testChange{Type: DELETE, Path: `a`, From: `{ x: "hello" }`, To: `<nil>`},
+				testChange{Type: DELETE, Path: `a.x`, From: `"hello"`, To: `<nil>`},
 			},
 		},
 		{
@@ -246,13 +270,14 @@ type testChange struct {
 }
 
 func toTestChangelog(cl Changelog) testChangelog {
+	replacer := strings.NewReplacer("\n", " ", "\t", "")
 	tcl := testChangelog{}
 	for _, c := range cl {
 		tc := testChange{
 			Type: c.Type,
 			Path: fmt.Sprint(c.Path),
-			From: fmt.Sprint(c.From),
-			To:   fmt.Sprint(c.To),
+			From: replacer.Replace(fmt.Sprint(c.From)),
+			To:   replacer.Replace(fmt.Sprint(c.To)),
 		}
 		tcl = append(tcl, tc)
 	}
