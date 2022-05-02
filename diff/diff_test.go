@@ -97,6 +97,7 @@ func TestDiff(t *testing.T) {
 				f: null
 				#Def: "foo"
 				_h: 3
+				i?: int
 			} `,
 			cl: testChangelog{
 				testChange{Type: UPDATE, Path: `a`, From: `int`, To: `string`},
@@ -105,6 +106,22 @@ func TestDiff(t *testing.T) {
 				testChange{Type: UPDATE, Path: `d`, From: `1`, To: `int`},
 				testChange{Type: UPDATE, Path: `e`, From: `[1, 2, 3]`, To: `{ a: 3 }`},
 				testChange{Type: UPDATE, Path: `_h`, From: `2`, To: `3`},
+				testChange{Type: CREATE, Path: `i`, From: `<nil>`, To: `int`},
+			},
+		},
+		{
+			name:    "ignored optional fields",
+			profile: &Profile{IgnoreOptionalFields: true},
+			x: `{
+				j?: _
+			}`,
+			y: `{
+				j?: _
+				j: {a: 1}
+			}`,
+			cl: testChangelog{
+				testChange{Type: CREATE, Path: `j`, From: `<nil>`, To: `{ a: 1 }`},
+				testChange{Type: CREATE, Path: `j.a`, From: `<nil>`, To: `1`},
 			},
 		},
 		{

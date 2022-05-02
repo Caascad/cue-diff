@@ -51,6 +51,9 @@ func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
 			if yp > 0 {
 				break
 			}
+			if xf.IsOptional && d.cfg.IgnoreOptionalFields {
+				continue
+			}
 			if xf.IsDefinition && d.cfg.IgnoreDefinitions {
 				continue
 			}
@@ -76,6 +79,10 @@ func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
 				break
 			}
 			yMap[yf.Selector] = 0
+
+			if yf.IsOptional && d.cfg.IgnoreOptionalFields {
+				continue
+			}
 			if yf.IsDefinition && d.cfg.IgnoreDefinitions {
 				continue
 			}
@@ -103,6 +110,22 @@ func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
 
 			yf := sy.Field(int(yp - 1))
 
+			xv := xf.Value
+			yv := yf.Value
+
+			if d.cfg.IgnoreOptionalFields {
+				if xf.IsOptional && yf.IsOptional {
+					continue
+				} else if xf.IsOptional {
+					// Behave like x doesn't exists.
+					yv.Walk(func(v cue.Value) bool {
+						d.cl.Add(CREATE, v.Path(), nil, &v)
+						return true
+					}, nil)
+					continue
+				}
+			}
+
 			if xf.IsDefinition && d.cfg.IgnoreDefinitions {
 				continue
 			}
@@ -110,8 +133,6 @@ func (d *differ) diffStruct(x, y cue.Value) (bool, error) {
 				continue
 			}
 
-			xv := xf.Value
-			yv := yf.Value
 			hasDiff, err := d.diffValue(xv, yv)
 			if err != nil {
 				return hasDiff, err

@@ -53,6 +53,12 @@ type Profile struct {
 	UseDefaults        bool
 	IgnoreDefinitions  bool
 	IgnoreHiddenFields bool
+
+	// Ignores optional fields.
+	// An added or removed optional field will not be recorded in the changelog.
+	// However if an optional field is defined as a regular field it will be
+	// recorded like if it was a new regular field.
+	IgnoreOptionalFields bool
 }
 
 var (
